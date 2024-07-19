@@ -1,0 +1,10 @@
+spring:
+  application:
+    name: fileservice
+  config:
+    import: optional:configserver:http://localhost:8071/
+
+
+logging:
+  level:
+    org.hibernate.SQL: DEBUG
