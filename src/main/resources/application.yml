@@ -5,10 +5,11 @@ spring:
     import: optional:configserver:http://localhost:8071/
 
 #  kafka:
+#    bootstrap-servers: localhost:9095
 #    producer:
-#      bootstrap-servers: localhost:9095
 #      key-serializer: org.apache.kafka.common.serialization.StringSerializer
-#      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+#      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+
 
 
 logging:

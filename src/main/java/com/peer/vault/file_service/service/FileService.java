@@ -9,7 +9,7 @@ import java.util.Map;
 
 public interface FileService {
 
-    String saveFile(FileMetaDTO fileMetaDTO);
+    FileMetaDTO saveFile(FileMetaDTO fileMetaDTO);
 
     byte[] loadFile(String hash);
 

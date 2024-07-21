@@ -1,23 +1,25 @@
 package com.peer.vault.file_service.service.Impl;
 
 
+import com.peer.vault.file_service.client.UserClient;
 import com.peer.vault.file_service.config.IPFSConfig;
 import com.peer.vault.file_service.domain.FileMeta;
+import com.peer.vault.file_service.domain.UserCredential;
+import com.peer.vault.file_service.dto.EmailRequest;
 import com.peer.vault.file_service.dto.FileMetaDTO;
-import com.peer.vault.file_service.messaging.KafkaProducerService;
 import com.peer.vault.file_service.repository.FileMetaRepository;
 import com.peer.vault.file_service.service.FileService;
+import com.peer.vault.file_service.service.email.EmailService;
 import com.peer.vault.file_service.util.FileSizeUtil;
 import io.ipfs.api.IPFS;
 import io.ipfs.api.MerkleNode;
 import io.ipfs.api.NamedStreamable;
 import io.ipfs.multihash.Multihash;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.io.ByteArrayInputStream;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.time.LocalDateTime;
@@ -37,11 +39,16 @@ public class FileServiceImpl implements FileService {
     private FileMetaRepository fileMetaRepository;
 
     @Autowired
-    private KafkaProducerService kafkaProducerService;
+    private EmailService emailService;
+
+    @Autowired
+    private UserClient userClient;
+
+
 
 
     @Override
-    public String saveFile(FileMetaDTO fileMetaDTO) {
+    public FileMetaDTO saveFile(FileMetaDTO fileMetaDTO) {
         try {
             IPFS ipfs = ipfsConfig.ipfs;
 
@@ -64,7 +71,7 @@ public class FileServiceImpl implements FileService {
 
             fileMetaRepository.save(fileMeta);
 
-            return cid;
+            return fileMetaDTO;
         } catch (IOException ex) {
             throw new RuntimeException("Error whilst communicating with the IPFS node", ex);
         }
@@ -102,9 +109,8 @@ public class FileServiceImpl implements FileService {
     public void shareFile(Long fileId, String recipientEmail) {
         FileMeta fileMeta = fileMetaRepository.findById(fileId)
                 .orElseThrow(() -> new RuntimeException("FileMeta not found with id: " + fileId));
-
-        String fileUrl = fileMeta.getFileUrl();
-        kafkaProducerService.sendFileShareEvent(fileUrl, recipientEmail);
+        ResponseEntity<Optional<UserCredential>> userCredential = userClient.getUserById(fileMeta.getUserId());
+        emailService.sendFileUrlToRecipientEmail(fileMeta.getFileUrl(), recipientEmail, userCredential);
     }
 
     @Override

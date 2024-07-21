@@ -22,7 +22,7 @@ public class FileController {
     private FileService fileService;
 
     @PostMapping("/upload")
-    public String uploadFile(@RequestParam("file") MultipartFile file,
+    public ResponseEntity<FileMetaDTO> uploadFile(@RequestParam("file") MultipartFile file,
                              @RequestParam("fileName") String fileName,
                              @RequestParam("fileType") String fileType,
                              @RequestParam("userId") Long userId,
@@ -34,7 +34,7 @@ public class FileController {
         fileMetaDTO.setUserId(userId);
         fileMetaDTO.setDescription(description);
 
-        return fileService.saveFile(fileMetaDTO);
+        return ResponseEntity.status(HttpStatus.CREATED).body(fileService.saveFile(fileMetaDTO));
     }
 
     @GetMapping("/download/{hash}")
