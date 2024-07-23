@@ -109,8 +109,8 @@ public class FileServiceImpl implements FileService {
     public void shareFile(Long fileId, String recipientEmail) {
         FileMeta fileMeta = fileMetaRepository.findById(fileId)
                 .orElseThrow(() -> new RuntimeException("FileMeta not found with id: " + fileId));
-        ResponseEntity<Optional<UserCredential>> userCredential = userClient.getUserById(fileMeta.getUserId());
-        emailService.sendFileUrlToRecipientEmail(fileMeta.getFileUrl(), recipientEmail, userCredential);
+//        ResponseEntity<Optional<UserCredential>> userCredential = userClient.getUserById(fileMeta.getUserId());
+        emailService.sendFileUrlToRecipientEmail(fileMeta.getFileUrl(), recipientEmail);
     }
 
     @Override

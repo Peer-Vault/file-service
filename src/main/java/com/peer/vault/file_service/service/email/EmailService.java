@@ -15,38 +15,26 @@ public class EmailService {
     @Autowired
     private NotificationClient notificationClient;
 
-    public void sendFileUrlToRecipientEmail(String fileUrl, String recipientEmail, ResponseEntity<Optional<UserCredential>> responseEntity) {
-        Optional<UserCredential> optionalUserCredential = responseEntity.getBody();
-        if (optionalUserCredential.isPresent()) {
-            UserCredential senderCredential = optionalUserCredential.get();
-            String senderName = senderCredential.getFirstName() + " " + senderCredential.getLastName();
-            String senderEmail = senderCredential.getEmail();
+    public void sendFileUrlToRecipientEmail(String fileUrl, String recipientEmail) {
+        String emailBody = String.format(
+                "Dear User,\n\n" +
+                        "You have received a file.\n\n" +
+                        "Here is the file URL: %s\n\n" +
+                        "If you have any questions or need further assistance, please feel free to reach out to our support team.\n\n" +
+                        "Best regards,\n\n" +
+                        "The Peer Vault Team\n" +
+                        "Contact: 8955946276\n" +
+                        "Email: cmanishkumar193@gmail.com",
+                fileUrl);
 
-            String emailBody = String.format(
-                    "Dear User,\n\n" +
-                            "You have received a file from %s.\n\n" +
-                            "Here is the file URL: %s\n\n" +
-                            "If you have any questions or need further assistance, please feel free to contact the sender directly or reach out to our support team.\n\n" +
-                            "Sender Details:\n" +
-                            "Name: %s\n" +
-                            "Email: %s\n\n\n" +
-                            "Best regards,\n\n" +
-                            "The Peer Vault Team\n" +
-                            "Contact: 8955946276\n" +
-                            "Email: cmanishkumar193@gmail.com",
-                    senderName, fileUrl,
-                    senderName, senderEmail);
+        EmailRequest emailRequest = new EmailRequest();
+        emailRequest.setTo(recipientEmail);
+        emailRequest.setSubject("You have received a file");
+        emailRequest.setBody(emailBody);
 
-            EmailRequest emailRequest = new EmailRequest();
-            emailRequest.setTo(recipientEmail);
-            emailRequest.setSubject(String.format("You have received a file from %s", senderName));
-            emailRequest.setBody(emailBody);
-
-            notificationClient.sendEmail(emailRequest);
-        } else {
-            throw new RuntimeException("Sender's credentials are not available.");
-        }
+        notificationClient.sendEmail(emailRequest);
     }
+
 
 
 }
