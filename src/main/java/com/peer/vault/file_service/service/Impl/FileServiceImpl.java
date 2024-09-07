@@ -57,7 +57,7 @@ public class FileServiceImpl implements FileService {
             MerkleNode response = ipfs.add(is).get(0);
             String cid = response.hash.toBase58();
             String fileSize = FileSizeUtil.convertToReadableSize(fileMetaDTO.getFile().getSize());
-            String fileUrl = "http://localhost:8072/file/download/" + cid;
+            String fileUrl = "http://localhost:3000/file/download/" + cid;
 
             FileMeta fileMeta = new FileMeta();
             fileMeta.setFileName(fileMetaDTO.getFileName());
@@ -84,9 +84,24 @@ public class FileServiceImpl implements FileService {
             Multihash filePointer = Multihash.fromBase58(hash);
             return ipfs.cat(filePointer);
         } catch (IOException ex) {
-            throw new RuntimeException("Error whilst communicating with the IPFS node", ex);
+            throw new RuntimeException("Error communicating with the IPFS node", ex);
+        } catch (Exception ex) {
+            // Handle generic exceptions
+            throw new RuntimeException("Failed to load file from IPFS for hash: " + hash, ex);
         }
     }
+
+
+//    @Override
+//    public byte[] loadFile(String hash) {
+//        try {
+//            IPFS ipfs = ipfsConfig.ipfs;
+//            Multihash filePointer = Multihash.fromBase58(hash);
+//            return ipfs.cat(filePointer);
+//        } catch (IOException ex) {
+//            throw new RuntimeException("Error whilst communicating with the IPFS node", ex);
+//        }
+//    }
 
     @Override
     public FileMeta getFileMetaByCID(String cid) {
@@ -94,16 +109,35 @@ public class FileServiceImpl implements FileService {
         return fileMeta.orElseThrow(() -> new RuntimeException("File metadata not found for CID: " + cid));
     }
 
+//    @Override
+//    public List<Map<String, Object>> getFilesWithContentByUserId(Long userId) {
+//        List<FileMeta> fileMetas = fileMetaRepository.findByUserId(userId);
+//        return fileMetas.stream().map(fileMeta -> {
+//            Map<String, Object> fileDetails = new HashMap<>();
+//            fileDetails.put("fileMeta", fileMeta);
+//            fileDetails.put("fileContent", loadFile(fileMeta.getCID()));
+//            return fileDetails;
+//        }).collect(Collectors.toList());
+//    }
+
     @Override
-    public List<Map<String, Object>> getFilesWithContentByUserId(Long userId) {
+    public List<FileMetaDTO> getFilesWithContentByUserId(Long userId) {
         List<FileMeta> fileMetas = fileMetaRepository.findByUserId(userId);
         return fileMetas.stream().map(fileMeta -> {
-            Map<String, Object> fileDetails = new HashMap<>();
-            fileDetails.put("fileMeta", fileMeta);
-            fileDetails.put("fileContent", loadFile(fileMeta.getCID()));
-            return fileDetails;
+
+            FileMetaDTO fileMetaDTO = new FileMetaDTO();
+            fileMetaDTO.setId(fileMeta.getId());
+            fileMetaDTO.setFileName(fileMeta.getFileName());
+            fileMetaDTO.setFileType(fileMeta.getFileType());
+            fileMetaDTO.setFileSize(fileMeta.getFileSize());
+            fileMetaDTO.setUserId(fileMeta.getUserId());
+            fileMetaDTO.setDescription(fileMeta.getDescription());
+            fileMetaDTO.setUploadDate(fileMeta.getUploadDate());
+            fileMetaDTO.setCID(fileMeta.getCID());
+            return fileMetaDTO;
         }).collect(Collectors.toList());
     }
+
 
     @Override
     public void shareFile(Long fileId, String recipientEmail) {
