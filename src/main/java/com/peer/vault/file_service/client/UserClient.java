@@ -12,6 +12,7 @@ import java.util.Optional;
 @FeignClient(name = "userservice", url = "http://localhost:9091/user")
 public interface UserClient {
     @GetMapping("/userinfo/getUserById")
+
     ResponseEntity<Optional<UserCredential>> getUserById(@RequestParam("id") Long id);
 
 }
