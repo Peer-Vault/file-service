@@ -15,9 +15,11 @@ public interface FileService {
 
     FileMeta getFileMetaByCID(String cid);
 
-    List<Map<String, Object>> getFilesWithContentByUserId(Long userId);
+//    List<Map<String, Object>> getFilesWithContentByUserId(Long userId);
 
     void deleteFileById(Long id);
 
     void shareFile(Long fileId, String email);
+
+    List<FileMetaDTO> getFilesWithContentByUserId(Long userId);
 }
