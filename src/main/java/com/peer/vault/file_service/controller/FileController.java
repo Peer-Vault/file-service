@@ -39,14 +39,37 @@ public class FileController {
 
     @GetMapping("/download/{hash}")
     public ResponseEntity<byte[]> getFile(@PathVariable("hash") String hash) {
-        FileMeta fileMeta = fileService.getFileMetaByCID(hash);
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
-        headers.setContentDispositionFormData("attachment", fileMeta.getFileName() + "." + fileMeta.getFileType());
+        try {
+            FileMeta fileMeta = fileService.getFileMetaByCID(hash);
+            if (fileMeta == null) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+            }
 
-        byte[] bytes = fileService.loadFile(hash);
-        return ResponseEntity.status(HttpStatus.OK).headers(headers).body(bytes);
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
+            headers.setContentDispositionFormData("attachment", fileMeta.getFileName() + "." + fileMeta.getFileType());
+
+            byte[] bytes = fileService.loadFile(hash);
+            return ResponseEntity.status(HttpStatus.OK).headers(headers).body(bytes);
+        } catch (Exception ex) {
+            // Log the exception and return a 500 error with a meaningful message
+            System.err.println("Error while downloading file: " + ex.getMessage());
+            ex.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+        }
     }
+
+
+//    @GetMapping("/download/{hash}")
+//    public ResponseEntity<byte[]> getFile(@PathVariable("hash") String hash) {
+//        FileMeta fileMeta = fileService.getFileMetaByCID(hash);
+//        HttpHeaders headers = new HttpHeaders();
+//        headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
+//        headers.setContentDispositionFormData("attachment", fileMeta.getFileName() + "." + fileMeta.getFileType());
+//
+//        byte[] bytes = fileService.loadFile(hash);
+//        return ResponseEntity.status(HttpStatus.OK).headers(headers).body(bytes);
+//    }
 
     @PostMapping("/share")
     public ResponseEntity<Void> shareFile(
@@ -62,10 +85,17 @@ public class FileController {
         return ResponseEntity.noContent().build();
     }
 
+//    @GetMapping("/user/{userId}/files")
+//    public ResponseEntity<List<Map<String, Object>>> getFilesByUserId(@PathVariable("userId") Long userId) {
+//        List<Map<String, Object>> filesWithContent = fileService.getFilesWithContentByUserId(userId);
+//        return ResponseEntity.status(HttpStatus.OK).body(filesWithContent);
+//    }
+
     @GetMapping("/user/{userId}/files")
-    public ResponseEntity<List<Map<String, Object>>> getFilesByUserId(@PathVariable("userId") Long userId) {
-        List<Map<String, Object>> filesWithContent = fileService.getFilesWithContentByUserId(userId);
+    public ResponseEntity<List<FileMetaDTO>> getFilesByUserId(@PathVariable("userId") Long userId) {
+        List<FileMetaDTO> filesWithContent = fileService.getFilesWithContentByUserId(userId);
         return ResponseEntity.status(HttpStatus.OK).body(filesWithContent);
     }
+
 }
 
