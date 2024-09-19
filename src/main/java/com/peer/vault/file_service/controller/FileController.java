@@ -94,6 +94,7 @@ public class FileController {
     @GetMapping("/user/{userId}/files")
     public ResponseEntity<List<FileMetaDTO>> getFilesByUserId(@PathVariable("userId") Long userId) {
         List<FileMetaDTO> filesWithContent = fileService.getFilesWithContentByUserId(userId);
+
         return ResponseEntity.status(HttpStatus.OK).body(filesWithContent);
     }
 
