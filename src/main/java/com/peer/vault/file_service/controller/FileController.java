@@ -59,6 +59,28 @@ public class FileController {
         }
     }
 
+    @GetMapping("/download/shared/{hash}")
+    public ResponseEntity<byte[]> downloadSharedFile(@PathVariable("hash") String hash) {
+        try {
+            FileMeta fileMeta = fileService.getFileMetaByCID(hash);
+            if (fileMeta == null) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+            }
+
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
+            headers.setContentDispositionFormData("attachment", fileMeta.getFileName() + "." + fileMeta.getFileType());
+
+            byte[] bytes = fileService.loadFile(hash);
+            return ResponseEntity.status(HttpStatus.OK).headers(headers).body(bytes);
+        } catch (Exception ex) {
+            // Log the exception and return a 500 error with a meaningful message
+            System.err.println("Error while downloading file: " + ex.getMessage());
+            ex.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+        }
+    }
+
 
 //    @GetMapping("/download/{hash}")
 //    public ResponseEntity<byte[]> getFile(@PathVariable("hash") String hash) {
