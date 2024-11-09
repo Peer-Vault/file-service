@@ -7,6 +7,7 @@ import com.peer.vault.file_service.domain.FileMeta;
 import com.peer.vault.file_service.domain.UserCredential;
 import com.peer.vault.file_service.dto.EmailRequest;
 import com.peer.vault.file_service.dto.FileMetaDTO;
+import com.peer.vault.file_service.messaging.KafkaProducer;
 import com.peer.vault.file_service.repository.FileMetaRepository;
 import com.peer.vault.file_service.service.FileService;
 import com.peer.vault.file_service.service.email.EmailService;
@@ -44,7 +45,8 @@ public class FileServiceImpl implements FileService {
     @Autowired
     private UserClient userClient;
 
-
+    @Autowired
+    private KafkaProducer producer;
 
 
     @Override
@@ -143,8 +145,11 @@ public class FileServiceImpl implements FileService {
     public void shareFile(Long fileId, String recipientEmail) {
         FileMeta fileMeta = fileMetaRepository.findById(fileId)
                 .orElseThrow(() -> new RuntimeException("FileMeta not found with id: " + fileId));
+        if (producer != null){
+            producer.producerForFileSharing(fileMeta.getFileUrl(), recipientEmail);
+        }
 //        ResponseEntity<Optional<UserCredential>> userCredential = userClient.getUserById(fileMeta.getUserId());
-        emailService.sendFileUrlToRecipientEmail(fileMeta.getFileUrl(), recipientEmail);
+//        emailService.sendFileUrlToRecipientEmail(fileMeta.getFileUrl(), recipientEmail);
     }
 
     @Override
