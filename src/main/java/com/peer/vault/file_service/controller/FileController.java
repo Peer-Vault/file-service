@@ -52,7 +52,6 @@ public class FileController {
             byte[] bytes = fileService.loadFile(hash);
             return ResponseEntity.status(HttpStatus.OK).headers(headers).body(bytes);
         } catch (Exception ex) {
-            // Log the exception and return a 500 error with a meaningful message
             System.err.println("Error while downloading file: " + ex.getMessage());
             ex.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
